@@ -4,7 +4,8 @@
 __MACOSX/
 .AppleDouble
 .LSOverride
-Icon[]
+Icon[
+]
 
 # Resource forks
 ._*
@@ -25,7 +26,8 @@ Icon[]
 .file
 .disk_label*
 lost+found
-.HFS+ Private Directory Data[]
+.HFS+ Private Directory Data[
+]
 
 # Directories potentially created on remote AFP share
 .AppleDB
@@ -55,3 +57,49 @@ Backups.backupdb
 .MobileBackups.trash
 MobileBackups.trash
 tmbootpicker.efi
+
+# Xcode
+build/
+DerivedData/
+*.xcuserstate
+*.xcscmblueprint
+**/xcuserdata/
+**/xcuserdatad/
+
+# Swift Package Manager
+/.build/
+/.swiftpm/
+Packages/
+# Keep Package.resolved to ensure reproducible dependency resolution
+
+# CocoaPods / Carthage
+/Pods/
+/Carthage/Build/
+
+# Archive / generated
+*.xcarchive
+*.ipa
+*.dSYM
+*.dSYM.zip
+
+# Certificates, provisioning
+*.p12
+*.mobileprovision
+*.cer
+
+# Fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/
+fastlane/test_output/
+
+# Editor and misc
+*.swp
+*~
+.idea/
+.vscode/
+*.orig
+
+# Project-specific workspace data
+Final.xcodeproj/xcuserdata/
+Final.xcodeproj/project.xcworkspace/xcuserdata/
