@@ -8,6 +8,132 @@ struct ClueDefinition: Identifiable {
     let generate: ([Int], [String]) -> String
 }
 
+
+extension ClueDefinition {
+    /// Public-facing clue preview shown before selection. It describes the clue shape without revealing this round's answer.
+    var selectionPreview: String {
+        if id.hasPrefix("lucky_") {
+            let digit = id.replacingOccurrences(of: "lucky_", with: "")
+            return "【\(name)】：顯示所有密碼中的數字 \(digit) 的位置 [第X位]。"
+        }
+
+        let template: String
+        switch id {
+        case "sum":
+            template = "三個數字加起來的總和是 [總和]。"
+        case "odd_positions":
+            template = "奇數的位置 [奇數位置]。"
+        case "even_positions":
+            template = "偶數的位置 [偶數位置]。"
+        case "compare_ab":
+            template = "第一個數字 [大於 / 小於 / 等於] 第二個數字。"
+        case "compare_bc":
+            template = "第二個數字 [大於 / 小於 / 等於] 第三個數字。"
+        case "compare_ac":
+            template = "第一個數字 [大於 / 小於 / 等於] 第三個數字。"
+        case "range":
+            template = "最大值減最小值的差 [等於?]。"
+        case "zero_product":
+            template = "這三個數字相乘的積 [是 0 / 不是 0]。"
+        case "prime_count":
+            template = "這三個數字中，質數（2, 3, 5, 7）的數量 [質數數量]。"
+        case "big_count":
+            template = "密碼中 [大於或等於 5 的數量]。"
+        case "small_count":
+            template = "密碼中 [小於 5 的數量]。"
+        case "ascending":
+            template = "這三個數字是不是從小到大排列 [是 / 不是]。"
+        case "duplicates":
+            template = "這三個數字中 [有 / 沒有] 任何數字重複。"
+        case "odd_even_total":
+            template = "這三個數字 [奇數數量, 偶數數量]。"
+        case "multiple_ab":
+            template = "前兩位數字的總和 [可以被 3 整除 / 不能被 3 整除] 和 [可以被 2 整除 / 不能被 2 整除]。"
+        case "multiple_bc":
+            template = "後兩位數字的總和 [可以被 3 整除 / 不能被 3 整除] 和 [可以被 2 整除 / 不能被 2 整除]。"
+        case "max_position":
+            template = "最大（或並列最大）的數字 [出現在第?個的位置]。"
+        case "min_position":
+            template = "最小（或並列最小）的數字 [出現在第?個的位置]。"
+        case "max_info":
+            template = "最大（或並列最大）的數字 [可以被 3 整除 / 不能被 3 整除] 和 [可以被 2 整除 / 不能被 2 整除]。"
+        case "min_info":
+            template = "最小（或並列最小）的數字 [最小值]。"
+        case "diff_ab":
+            template = "第一個與第二個數字的絕對差。"
+        case "diff_bc":
+            template = "第二個與第三個數字的絕對差。"
+        case "diff_ac":
+            template = "第一個與第三個數字的絕對差。"
+        case "max_diff":
+            template = "顯示所有的絕對差的最大值。"
+        case "min_diff":
+            template = "顯示所有的絕對差的最小值。"
+        case "diff_sum":
+            template = "顯示所有的絕對差的和。"
+        case "random_diff":
+            template = "隨機顯示一個絕對差 [某數與某數的差為?]。"
+        case "random_digit":
+            template = "從 3 個數字隨機爆出一位數字 [密碼包含?]。"
+        case "random_sum2":
+            template = "隨機說出 2 位和為多少。"
+        case "blue_radar":
+            template = "顯示所有藍色方塊。"
+        case "green_radar":
+            template = "顯示所有綠色方塊。"
+        case "yellow_radar":
+            template = "顯示所有黃色方塊。"
+        case "reveal_first":
+            template = "直接公開第一個位置（左邊）方塊的真實顏色（黃 / 綠 / 藍）。"
+        case "reveal_mid":
+            template = "直接公開第二個位置（中間）方塊的真實顏色（黃 / 綠 / 藍）。"
+        case "reveal_last":
+            template = "直接公開第三個位置（右邊）方塊的真實顏色（黃 / 綠 / 藍）。"
+        case "yellow_sum":
+            template = "黃色方塊上面的數字總和。"
+        case "green_sum":
+            template = "綠色方塊上面的數字總和。"
+        case "blue_sum":
+            template = "藍色方塊上面的數字總和。"
+        case "random_color_sum":
+            template = "其中一種顏色（不顯示顏色）方塊上面的數字總和。"
+        case "random_two_color_sum":
+            template = "隨機兩種顏色（不顯示顏色）方塊上面的數字總和。"
+        case "blue_yellow_sum":
+            template = "藍色方塊 + 黃色方塊上面的數字總和。"
+        case "yellow_green_sum":
+            template = "綠色方塊 + 黃色方塊上面的數字總和。"
+        case "blue_green_sum":
+            template = "藍色方塊 + 綠色方塊上面的數字總和。"
+        case "color_diversity":
+            template = "場上一共出現了幾種不同的顏色？（1 種 / 2 種 / 3 種）。"
+        case "symmetry_scan":
+            template = "第一個方塊與第三個方塊的顏色 [相同 / 不同]。"
+        case "neighbor_check":
+            template = "前兩個方塊（第一與第二個）的顏色 [相同 / 不同]。"
+        case "tail_check":
+            template = "後兩個方塊（第二與第三個）的顏色 [相同 / 不同]。"
+        case "missing_color":
+            template = "哪一種顏色在這一局裡完全沒有出現？（黃色沒出現 / 綠色沒出現 / 藍色沒出現 / 三色都有出現）。"
+        case "left_zone_a":
+            template = "前兩個方塊（第一與第二個），[有 / 沒有] 包含黃色。"
+        case "left_zone_b":
+            template = "前兩個方塊（第一與第二個），[有 / 沒有] 包含綠色。"
+        case "left_zone_c":
+            template = "前兩個方塊（第一與第二個），[有 / 沒有] 包含藍色。"
+        case "right_zone_a":
+            template = "後兩個方塊（第二與第三個），[有 / 沒有] 包含黃色。"
+        case "right_zone_b":
+            template = "後兩個方塊（第二與第三個），[有 / 沒有] 包含綠色。"
+        case "right_zone_c":
+            template = "後兩個方塊（第二與第三個），[有 / 沒有] 包含藍色。"
+        default:
+            template = "選擇後揭露此線索的結果。"
+        }
+        return "【\(name)】：\(template)"
+    }
+}
+
 // MARK: - Clue Pool
 enum CluePool {
 

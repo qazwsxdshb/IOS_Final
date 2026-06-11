@@ -96,55 +96,47 @@ struct CluePickerSheet: View {
                 Text("選擇線索")
                     .font(.headline)
                     .foregroundColor(.white)
-                Text("選定後才會揭露完整線索")
+                Text("選擇一張線索卡，內容中的數值會在選定後揭露")
                     .font(.caption)
                     .foregroundColor(.white.opacity(0.5))
             }
 
-            VStack(spacing: 10) {
-                ForEach(gameVM.pendingClues) { option in
-                    Button {
-                        gameVM.selectClue(option)
-                    } label: {
-                        HStack(spacing: 12) {
-                            ClueTypeBadge(category: option.clue.category)
+            ScrollView {
+                VStack(spacing: 10) {
+                    ForEach(gameVM.pendingClues) { option in
+                        Button {
+                            gameVM.selectClue(option)
+                        } label: {
+                            HStack(spacing: 12) {
+                                ClueTypeBadge(category: option.clue.category)
 
-                            VStack(alignment: .leading, spacing: 3) {
-                                Text(hiddenOptionTitle(for: option))
-                                    .font(.system(size: 13, weight: .bold))
-                                    .foregroundColor(.white.opacity(0.7))
-                                Text("選擇後揭露線索內容")
-                                    .font(.system(size: 15))
-                                    .foregroundColor(.white.opacity(0.45))
-                                    .fixedSize(horizontal: false, vertical: true)
+                                VStack(alignment: .leading, spacing: 3) {
+                                    Text(option.clue.selectionPreview)
+                                        .font(.system(size: 15))
+                                        .foregroundColor(.white)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                }
+
+                                Spacer()
+
+                                Image(systemName: "chevron.right")
+                                    .font(.caption)
+                                    .foregroundColor(.white.opacity(0.3))
                             }
-
-                            Spacer()
-
-                            Image(systemName: "chevron.right")
-                                .font(.caption)
-                                .foregroundColor(.white.opacity(0.3))
+                            .padding(14)
+                            .background(Color.white.opacity(0.09))
+                            .clipShape(RoundedRectangle(cornerRadius: 14))
                         }
-                        .padding(14)
-                        .background(Color.white.opacity(0.09))
-                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
                 }
             }
             .padding(.horizontal, 20)
 
             Spacer()
+
         }
         .background(Color(red: 0.05, green: 0.10, blue: 0.28))
         .presentationBackground(Color(red: 0.05, green: 0.10, blue: 0.28))
-    }
-
-    private func hiddenOptionTitle(for option: PendingClueOption) -> String {
-        switch option.clue.category {
-        case .number: return "神秘數字線索"
-        case .color: return "神秘顏色線索"
-        case .random: return "神秘隨機線索"
-        }
     }
 }

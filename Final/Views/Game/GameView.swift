@@ -100,7 +100,10 @@ struct GameView: View {
         // Navigate to analysis
         .navigationDestination(isPresented: $navigateToAnalysis) {
             if let record = savedRecord {
-                AnalysisView(record: record, onReturnHome: onReturnHome)
+                AnalysisView(record: record) {
+                    navigateToAnalysis = false
+                    onReturnHome()
+                }
             }
         }
     }

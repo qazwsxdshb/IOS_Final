@@ -50,4 +50,13 @@ struct FinalTests {
         #expect(gameVM.beginRandomClueDraw(playerCoins: &coins))
         #expect(!gameVM.pendingClues.contains { $0.clue.id == chosen.clue.id })
     }
+    @Test func cluePickerShowsTemplateInsteadOfGeneratedAnswer() async throws {
+        let sumClue = try #require(CluePool.numberClues.first { $0.id == "sum" })
+        #expect(sumClue.selectionPreview == "【總和】：三個數字加起來的總和是 [總和]。")
+        #expect(!sumClue.selectionPreview.contains("6"))
+
+        let generated = sumClue.generate([1, 2, 3], ["yellow", "green", "blue"])
+        #expect(generated == "三個數字加起來的總和是 6。")
+    }
+
 }
