@@ -72,6 +72,7 @@ struct GameView: View {
         .sheet(isPresented: $gameVM.showCluePicker) {
             CluePickerSheet(gameVM: gameVM)
                 .presentationDetents([.medium])
+                .interactiveDismissDisabled(true)
         }
         // AI Hint sheet
         .sheet(isPresented: $showHintInput) {
@@ -116,7 +117,7 @@ struct GameView: View {
                 .font(.system(size: 15, weight: .semibold))
             }
             Spacer()
-            Text("數字冒險王")
+            Text("數字探索者")
                 .font(.headline)
                 .foregroundColor(.white)
             Spacer()

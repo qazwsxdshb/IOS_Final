@@ -102,19 +102,18 @@ struct CluePickerSheet: View {
             }
 
             VStack(spacing: 10) {
-                ForEach(gameVM.pendingClues) { clue in
+                ForEach(gameVM.pendingClues) { option in
                     Button {
-                        var dummy = 0   // cost already deducted when drawing
-                        gameVM.selectClue(clue, playerCoins: &dummy)
+                        gameVM.selectClue(option)
                     } label: {
                         HStack(spacing: 12) {
-                            ClueTypeBadge(category: clue.category)
+                            ClueTypeBadge(category: option.clue.category)
 
                             VStack(alignment: .leading, spacing: 3) {
-                                Text(clue.name)
+                                Text(option.clue.name)
                                     .font(.system(size: 13, weight: .bold))
                                     .foregroundColor(.white.opacity(0.7))
-                                Text(clue.generate(gameVM.hiddenNumbers, gameVM.hiddenColors))
+                                Text(option.text)
                                     .font(.system(size: 15))
                                     .foregroundColor(.white)
                                     .fixedSize(horizontal: false, vertical: true)

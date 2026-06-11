@@ -8,8 +8,12 @@ struct HomeView: View {
 
     @State private var navigateToGame = false
     @State private var gameVM = GameViewModel()
+    @State private var activeProfile: PlayerProfile?
 
-    private var profile: PlayerProfile? { profiles.first }
+    private var profile: PlayerProfile? {
+        guard let userId = authManager.currentUser?.userId else { return nil }
+        return profiles.first { $0.userId == userId }
+    }
 
     var body: some View {
         NavigationStack {
@@ -62,10 +66,10 @@ struct HomeView: View {
                         }
 
                         VStack(spacing: 8) {
-                            Text("猜出隱藏的三個數字")
+                            Text("Dcbot 的數字探索者")
                                 .font(.title2.bold())
                                 .foregroundColor(.white)
-                            Text("綜合數字與顏色線索，智取密碼！")
+                            Text("抽線索、控成本，推理出三位密碼！")
                                 .font(.subheadline)
                                 .foregroundColor(.white.opacity(0.6))
                         }
@@ -78,7 +82,7 @@ struct HomeView: View {
                     Spacer()
 
                     Button {
-                        ensureProfile()
+                        activeProfile = ensureProfile()
                         gameVM.startNewGame()
                         navigateToGame = true
                     } label: {
@@ -103,11 +107,11 @@ struct HomeView: View {
                 }
             }
             .navigationDestination(isPresented: $navigateToGame) {
-                GameView(gameVM: gameVM, profile: profile)
+                GameView(gameVM: gameVM, profile: activeProfile ?? profile)
             }
             .toolbar(.hidden, for: .navigationBar)
         }
-        .onAppear { ensureProfile() }
+        .onAppear { _ = ensureProfile() }
     }
 
     private var backgroundGradient: LinearGradient {
@@ -124,13 +128,18 @@ struct HomeView: View {
         Color(red: 0.26, green: 0.52, blue: 0.96),
     ]
 
-    private func ensureProfile() {
-        guard profiles.isEmpty,
-              let user = authManager.currentUser else { return }
+    @discardableResult
+    private func ensureProfile() -> PlayerProfile? {
+        guard let user = authManager.currentUser else { return nil }
+        if let existing = profiles.first(where: { $0.userId == user.userId }) {
+            return existing
+        }
+
         let p = PlayerProfile(userId: user.userId,
                               displayName: user.displayName,
                               email: user.email)
         modelContext.insert(p)
+        return p
     }
 }
 

@@ -1,6 +1,12 @@
 import Foundation
 import Observation
 
+struct PendingClueOption: Identifiable {
+    var id: String { clue.id }
+    let clue: ClueDefinition
+    let text: String
+}
+
 @Observable
 final class GameViewModel {
 
@@ -19,9 +25,10 @@ final class GameViewModel {
     var revealedAnswer: Bool = false
 
     // Clue picker sheet state
-    var pendingClues: [ClueDefinition] = []
+    var pendingClues: [PendingClueOption] = []
     var showCluePicker: Bool = false
     var currentClueCategory: ClueCategory = .number
+    private var currentClueCost: Int = 0
 
     // Guess input
     var guessInput: [Int] = [0, 0, 0]
@@ -60,6 +67,7 @@ final class GameViewModel {
         guessInput = [0, 0, 0]
         pendingClues = []
         showCluePicker = false
+        currentClueCost = 0
     }
 
     // MARK: - Guess
@@ -105,24 +113,34 @@ final class GameViewModel {
 
         playerCoins -= cost
         currentClueCategory = category
+        currentClueCost = cost
 
         if category == .number { numberClueCount += 1 }
         else { colorClueCount += 1 }
 
         let pool = category == .number ? CluePool.numberClues : CluePool.colorClues
-        let usedByCategory = purchasedClues
-            .filter { $0.clueType == category }
-            .map { $0.clueText }
+        let usedIds = Set(
+            purchasedClues
+                .filter { $0.clueType == category || $0.clueType == .random }
+                .compactMap(\.clueId)
+        )
+        let usedTexts = Set(
+            purchasedClues
+                .filter { $0.clueType == category || $0.clueType == .random }
+                .map(\.clueText)
+        )
 
-        // Draw 3 unique clues not yet given to player
-        let available = pool.filter { clue in
+        // Draw 3 unique clues not yet given to player. Generate each text once so random clue definitions stay stable.
+        let available = pool.compactMap { clue -> PendingClueOption? in
             let generated = clue.generate(hiddenNumbers, hiddenColors)
-            return !usedByCategory.contains(generated)
+            guard !usedIds.contains(clue.id), !usedTexts.contains(generated) else { return nil }
+            return PendingClueOption(clue: clue, text: generated)
         }
         pendingClues = Array(available.shuffled().prefix(3))
         if pendingClues.isEmpty {
             // edge case: all clues exhausted — refund and return false
             playerCoins += cost
+            currentClueCost = 0
             if category == .number { numberClueCount -= 1 } else { colorClueCount -= 1 }
             return false
         }
@@ -135,15 +153,20 @@ final class GameViewModel {
         guard playerCoins >= randomClueCost else { return false }
         playerCoins -= randomClueCost
         currentClueCategory = .random
+        currentClueCost = randomClueCost
 
         let allPool = CluePool.numberClues + CluePool.colorClues
-        let usedTexts = Set(purchasedClues.map { $0.clueText })
-        let available = allPool.filter { clue in
-            !usedTexts.contains(clue.generate(hiddenNumbers, hiddenColors))
+        let usedIds = Set(purchasedClues.compactMap(\.clueId))
+        let usedTexts = Set(purchasedClues.map(\.clueText))
+        let available = allPool.compactMap { clue -> PendingClueOption? in
+            let generated = clue.generate(hiddenNumbers, hiddenColors)
+            guard !usedIds.contains(clue.id), !usedTexts.contains(generated) else { return nil }
+            return PendingClueOption(clue: clue, text: generated)
         }
         pendingClues = Array(available.shuffled().prefix(2))
         if pendingClues.isEmpty {
             playerCoins += randomClueCost
+            currentClueCost = 0
             return false
         }
         showCluePicker = true
@@ -151,24 +174,18 @@ final class GameViewModel {
     }
 
     /// Player picks a clue from the pending list
-    func selectClue(_ clue: ClueDefinition, playerCoins: inout Int) {
-        let text = clue.generate(hiddenNumbers, hiddenColors)
-        let cost: Int
-        switch currentClueCategory {
-        case .number: cost = nextClueCost(for: .number)   // already deducted — cost for display
-        case .color:  cost = nextClueCost(for: .color)
-        case .random: cost = randomClueCost
-        }
-
+    func selectClue(_ option: PendingClueOption) {
         let entry = ClueEntry(
             clueType: currentClueCategory,
-            clueText: text,
-            cost: cost,
+            clueId: option.clue.id,
+            clueText: option.text,
+            cost: currentClueCost,
             timestamp: Date()
         )
         purchasedClues.append(entry)
         showCluePicker = false
         pendingClues = []
+        currentClueCost = 0
     }
 
     // MARK: - Forfeit

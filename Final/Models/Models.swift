@@ -66,9 +66,18 @@ struct GuessEntry: Codable {
 
 struct ClueEntry: Codable {
     var clueType: ClueCategory
+    var clueId: String?
     var clueText: String
     var cost: Int
     var timestamp: Date
+
+    init(clueType: ClueCategory, clueId: String? = nil, clueText: String, cost: Int, timestamp: Date) {
+        self.clueType = clueType
+        self.clueId = clueId
+        self.clueText = clueText
+        self.cost = cost
+        self.timestamp = timestamp
+    }
 }
 
 enum ClueCategory: String, Codable {
