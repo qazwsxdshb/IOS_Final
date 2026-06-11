@@ -113,24 +113,26 @@ struct GameView: View {
     private var gameNavBar: some View {
         HStack {
             Button {
-                guard !isGameOver else { return }
-                showForfeitConfirm = true
+                if isGameOver {
+                    onReturnHome()
+                } else {
+                    showForfeitConfirm = true
+                }
             } label: {
                 HStack(spacing: 6) {
-                    Image(systemName: "xmark.circle.fill")
-                    Text("放棄")
+                    Image(systemName: isGameOver ? "house.fill" : "xmark.circle.fill")
+                    Text(isGameOver ? "回到主畫面" : "放棄")
                 }
-                .foregroundColor(.red.opacity(0.85))
+                .foregroundColor(isGameOver ? .yellow : .red.opacity(0.85))
                 .font(.system(size: 15, weight: .semibold))
             }
-            .disabled(isGameOver)
             Spacer()
             Text("數字冒險王")
                 .font(.headline)
                 .foregroundColor(.white)
             Spacer()
             // Spacer for balance
-            Text("放棄").opacity(0)
+            Text(isGameOver ? "回到主畫面" : "放棄").opacity(0)
                 .font(.system(size: 15, weight: .semibold))
         }
         .padding(.horizontal, 20)
@@ -268,10 +270,32 @@ struct GameView: View {
         VStack(spacing: 0) {
             Divider().background(Color.white.opacity(0.1))
             if isGameOver {
-                Text("本局已結束，功能已鎖定")
-                    .font(.caption.bold())
-                    .foregroundColor(.white.opacity(0.55))
-                    .padding(.top, 10)
+                VStack(spacing: 10) {
+                    Text("本局已結束，功能已鎖定")
+                        .font(.caption.bold())
+                        .foregroundColor(.white.opacity(0.55))
+
+                    Button {
+                        if savedRecord != nil {
+                            navigateToAnalysis = true
+                        }
+                    } label: {
+                        HStack(spacing: 8) {
+                            Image(systemName: "chart.bar.doc.horizontal.fill")
+                            Text("回到結算頁面")
+                                .font(.system(size: 16, weight: .bold))
+                        }
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 46)
+                        .background(Color.white.opacity(0.12))
+                        .foregroundColor(.white)
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(savedRecord == nil)
+                }
+                .padding(.horizontal, 12)
+                .padding(.top, 10)
             }
             HStack(spacing: 8) {
                 ActionButton(
