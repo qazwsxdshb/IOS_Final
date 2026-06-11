@@ -66,7 +66,7 @@ struct HomeView: View {
                         }
 
                         VStack(spacing: 8) {
-                            Text("Dcbot 的數字探索者")
+                            Text("數字冒險王")
                                 .font(.title2.bold())
                                 .foregroundColor(.white)
                             Text("抽線索、控成本，推理出三位密碼！")

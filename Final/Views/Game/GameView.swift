@@ -117,7 +117,7 @@ struct GameView: View {
                 .font(.system(size: 15, weight: .semibold))
             }
             Spacer()
-            Text("數字探索者")
+            Text("數字冒險王")
                 .font(.headline)
                 .foregroundColor(.white)
             Spacer()
