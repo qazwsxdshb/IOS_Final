@@ -62,6 +62,23 @@ struct GameView: View {
             }
         }
         .navigationBarHidden(true)
+        .overlay {
+            if let msg = feedbackMessage {
+                VStack {
+                    Spacer()
+                    Text(msg)
+                        .font(.subheadline.bold())
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 10)
+                        .background(Color.black.opacity(0.8))
+                        .foregroundColor(.white)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .padding(.bottom, 120)
+                }
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+                .animation(.spring(), value: feedbackMessage)
+            }
+        }
         // Guess input sheet
         .sheet(isPresented: $showGuessInput) {
             GuessInputSheet(gameVM: gameVM, profile: profile) { result in
@@ -382,8 +399,35 @@ struct GameView: View {
         record.finalCoinChange = -(gameVM.totalSpent) + (gameVM.gameResult == .win ? 5000 : 0)
         modelContext.insert(record)
         savedRecord = record
+        // Update profile counters used by achievements
         profile?.totalGamesPlayed += 1
-        if gameVM.gameResult == .win { profile?.totalWins += 1 }
+        if gameVM.gameResult == .win {
+            profile?.totalWins += 1
+            profile?.currentWinStreak += 1
+        } else {
+            profile?.currentWinStreak = 0
+        }
+
+        // Track coins earned and minimum balance
+        let coinChange = record.finalCoinChange
+        if coinChange > 0 {
+            profile?.totalCoinsEarned += coinChange
+        }
+        if let balance = profile?.coinBalance {
+            profile?.minCoinBalance = min(profile?.minCoinBalance ?? balance, balance)
+        }
+
+        // Check and unlock achievements
+        if let prof = profile {
+            let newly = AchievementManager.checkAndUnlock(profile: prof, record: record, in: modelContext)
+            if !newly.isEmpty {
+                let names = newly.map { $0.name }.joined(separator: ", ")
+                feedbackMessage = "解鎖成就：\(names)"
+                DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                    feedbackMessage = nil
+                }
+            }
+        }
     }
 
     private var backgroundGradient: LinearGradient {

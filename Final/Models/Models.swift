@@ -10,7 +10,12 @@ final class PlayerProfile {
     var coinBalance: Int
     var totalGamesPlayed: Int
     var totalWins: Int
-    var achievements: [String]  // stores Achievement.id strings
+    // maps achievement id -> unlocked date
+    var achievements: [String: Date]
+    // extra tracking for achievement conditions
+    var currentWinStreak: Int
+    var totalCoinsEarned: Int
+    var minCoinBalance: Int
     var createdAt: Date
 
     init(userId: String, displayName: String, email: String) {
@@ -20,7 +25,10 @@ final class PlayerProfile {
         self.coinBalance = RewardedAdConfiguration.startingCoins  // starting coins
         self.totalGamesPlayed = 0
         self.totalWins = 0
-        self.achievements = []
+        self.achievements = [:]
+        self.currentWinStreak = 0
+        self.totalCoinsEarned = 0
+        self.minCoinBalance = RewardedAdConfiguration.startingCoins
         self.createdAt = Date()
     }
 

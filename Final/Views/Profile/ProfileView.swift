@@ -136,7 +136,7 @@ struct ProfileView: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
                     ForEach(Achievement.allAchievements) { ach in
-                        let unlocked = profile?.achievements.contains(ach.id) ?? false
+                        let unlocked = profile?.achievements[ach.id] != nil
                         AchievementBadge(achievement: ach, isUnlocked: unlocked)
                     }
                 }
