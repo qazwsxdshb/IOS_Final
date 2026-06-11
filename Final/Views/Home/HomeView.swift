@@ -107,7 +107,10 @@ struct HomeView: View {
                 }
             }
             .navigationDestination(isPresented: $navigateToGame) {
-                GameView(gameVM: gameVM, profile: activeProfile ?? profile)
+                GameView(gameVM: gameVM, profile: activeProfile ?? profile) {
+                    navigateToGame = false
+                    activeProfile = nil
+                }
             }
             .toolbar(.hidden, for: .navigationBar)
         }

@@ -3,6 +3,7 @@ import SwiftData
 
 struct AnalysisView: View {
     let record: GameRecord
+    var onReturnHome: () -> Void = {}
 
     @Environment(\.dismiss) private var dismiss
     @Query private var profiles: [PlayerProfile]
@@ -31,23 +32,36 @@ struct AnalysisView: View {
                     // Stats summary
                     statsSummaryCard
 
-                    // Back to home
-                    Button {
-                        // Pop to root: dismiss twice
-                        dismiss()
-                    } label: {
-                        Text("回到主選單")
-                            .font(.system(size: 17, weight: .bold))
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 52)
-                            .background(
-                                LinearGradient(colors: [.yellow, .orange],
-                                               startPoint: .leading, endPoint: .trailing)
-                            )
-                            .foregroundColor(.black)
-                            .clipShape(RoundedRectangle(cornerRadius: 14))
+                    VStack(spacing: 12) {
+                        Button {
+                            dismiss()
+                        } label: {
+                            Text("回到遊戲畫面")
+                                .font(.system(size: 17, weight: .bold))
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 52)
+                                .background(Color.white.opacity(0.12))
+                                .foregroundColor(.white)
+                                .clipShape(RoundedRectangle(cornerRadius: 14))
+                        }
+                        .buttonStyle(.plain)
+
+                        Button {
+                            onReturnHome()
+                        } label: {
+                            Text("回到主畫面")
+                                .font(.system(size: 17, weight: .bold))
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 52)
+                                .background(
+                                    LinearGradient(colors: [.yellow, .orange],
+                                                   startPoint: .leading, endPoint: .trailing)
+                                )
+                                .foregroundColor(.black)
+                                .clipShape(RoundedRectangle(cornerRadius: 14))
+                        }
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
                     .padding(.horizontal, 20)
                     .padding(.bottom, 32)
                 }

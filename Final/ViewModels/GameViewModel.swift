@@ -93,6 +93,7 @@ final class GameViewModel {
         if isCorrect {
             playerCoins += 5000
             gameResult = .win
+            revealedAnswer = true
         }
 
         return isCorrect ? .correct : .wrong

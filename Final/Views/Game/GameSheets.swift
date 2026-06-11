@@ -96,7 +96,7 @@ struct CluePickerSheet: View {
                 Text("選擇線索")
                     .font(.headline)
                     .foregroundColor(.white)
-                Text("從以下線索中選擇 1 條")
+                Text("選定後才會揭露完整線索")
                     .font(.caption)
                     .foregroundColor(.white.opacity(0.5))
             }
@@ -110,12 +110,12 @@ struct CluePickerSheet: View {
                             ClueTypeBadge(category: option.clue.category)
 
                             VStack(alignment: .leading, spacing: 3) {
-                                Text(option.clue.name)
+                                Text(hiddenOptionTitle(for: option))
                                     .font(.system(size: 13, weight: .bold))
                                     .foregroundColor(.white.opacity(0.7))
-                                Text(option.text)
+                                Text("選擇後揭露線索內容")
                                     .font(.system(size: 15))
-                                    .foregroundColor(.white)
+                                    .foregroundColor(.white.opacity(0.45))
                                     .fixedSize(horizontal: false, vertical: true)
                             }
 
@@ -138,5 +138,13 @@ struct CluePickerSheet: View {
         }
         .background(Color(red: 0.05, green: 0.10, blue: 0.28))
         .presentationBackground(Color(red: 0.05, green: 0.10, blue: 0.28))
+    }
+
+    private func hiddenOptionTitle(for option: PendingClueOption) -> String {
+        switch option.clue.category {
+        case .number: return "神秘數字線索"
+        case .color: return "神秘顏色線索"
+        case .random: return "神秘隨機線索"
+        }
     }
 }
