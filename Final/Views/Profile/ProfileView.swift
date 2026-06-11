@@ -91,7 +91,7 @@ struct ProfileView: View {
                 Image(systemName: "dollarsign.circle.fill")
                     .font(.title2)
                     .foregroundColor(.yellow)
-                Text("\(profile?.coinBalance ?? 3000)")
+                Text("\(profile?.coinBalance ?? RewardedAdConfiguration.startingCoins)")
                     .font(.system(size: 15, weight: .black, design: .rounded))
                     .foregroundColor(.yellow)
             }

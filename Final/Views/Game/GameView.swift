@@ -4,6 +4,7 @@ import SwiftData
 struct GameView: View {
     @Bindable var gameVM: GameViewModel
     var profile: PlayerProfile?
+    var onReturnHome: () -> Void = {}
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
@@ -72,6 +73,7 @@ struct GameView: View {
         .sheet(isPresented: $gameVM.showCluePicker) {
             CluePickerSheet(gameVM: gameVM)
                 .presentationDetents([.medium])
+                .interactiveDismissDisabled(true)
         }
         // AI Hint sheet
         .sheet(isPresented: $showHintInput) {
@@ -98,7 +100,10 @@ struct GameView: View {
         // Navigate to analysis
         .navigationDestination(isPresented: $navigateToAnalysis) {
             if let record = savedRecord {
-                AnalysisView(record: record)
+                AnalysisView(record: record) {
+                    navigateToAnalysis = false
+                    onReturnHome()
+                }
             }
         }
     }
@@ -107,12 +112,18 @@ struct GameView: View {
 
     private var gameNavBar: some View {
         HStack {
-            Button { showForfeitConfirm = true } label: {
-                HStack(spacing: 6) {
-                    Image(systemName: "xmark.circle.fill")
-                    Text("放棄")
+            Button {
+                if isGameOver {
+                    onReturnHome()
+                } else {
+                    showForfeitConfirm = true
                 }
-                .foregroundColor(.red.opacity(0.85))
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: isGameOver ? "house.fill" : "xmark.circle.fill")
+                    Text(isGameOver ? "回到主畫面" : "放棄")
+                }
+                .foregroundColor(isGameOver ? .yellow : .red.opacity(0.85))
                 .font(.system(size: 15, weight: .semibold))
             }
             Spacer()
@@ -121,7 +132,7 @@ struct GameView: View {
                 .foregroundColor(.white)
             Spacer()
             // Spacer for balance
-            Text("放棄").opacity(0)
+            Text(isGameOver ? "回到主畫面" : "放棄").opacity(0)
                 .font(.system(size: 15, weight: .semibold))
         }
         .padding(.horizontal, 20)
@@ -258,13 +269,45 @@ struct GameView: View {
     private var actionButtonBar: some View {
         VStack(spacing: 0) {
             Divider().background(Color.white.opacity(0.1))
+            if isGameOver {
+                VStack(spacing: 10) {
+                    Text("本局已結束，功能已鎖定")
+                        .font(.caption.bold())
+                        .foregroundColor(.white.opacity(0.55))
+
+                    Button {
+                        if savedRecord != nil {
+                            navigateToAnalysis = true
+                        }
+                    } label: {
+                        HStack(spacing: 8) {
+                            Image(systemName: "chart.bar.doc.horizontal.fill")
+                            Text("回到結算頁面")
+                                .font(.system(size: 16, weight: .bold))
+                        }
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 46)
+                        .background(Color.white.opacity(0.12))
+                        .foregroundColor(.white)
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(savedRecord == nil)
+                }
+                .padding(.horizontal, 12)
+                .padding(.top, 10)
+            }
             HStack(spacing: 8) {
                 ActionButton(
                     title: "猜數字",
                     subtitle: "-\(gameVM.nextGuessCost)",
                     icon: "keyboard.fill",
                     color: .yellow
-                ) { showGuessInput = true }
+                ) {
+                    guard !isGameOver else { return }
+                    showGuessInput = true
+                }
+                .disabled(isGameOver)
 
                 ActionButton(
                     title: "數字線索",
@@ -272,6 +315,7 @@ struct GameView: View {
                     icon: "number.circle.fill",
                     color: .cyan
                 ) { buyClue(.number) }
+                .disabled(isGameOver)
 
                 ActionButton(
                     title: "顏色線索",
@@ -279,6 +323,7 @@ struct GameView: View {
                     icon: "paintpalette.fill",
                     color: .mint
                 ) { buyClue(.color) }
+                .disabled(isGameOver)
 
                 ActionButton(
                     title: "隨機線索",
@@ -286,6 +331,7 @@ struct GameView: View {
                     icon: "shuffle.circle.fill",
                     color: .orange
                 ) { buyClue(.random) }
+                .disabled(isGameOver)
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 12)
@@ -295,8 +341,10 @@ struct GameView: View {
 
     // MARK: - Actions
 
+    private var isGameOver: Bool { gameVM.gameResult != .inProgress }
+
     private func buyClue(_ category: ClueCategory) {
-        guard var coins = profile?.coinBalance else { return }
+        guard !isGameOver, var coins = profile?.coinBalance else { return }
         let success: Bool
         switch category {
         case .number: success = gameVM.beginClueDraw(category: .number, playerCoins: &coins)
@@ -385,6 +433,8 @@ struct NumberBlock: View {
 
 // MARK: - Action Button
 struct ActionButton: View {
+    @Environment(\.isEnabled) private var isEnabled
+
     let title: String
     let subtitle: String
     let icon: String
@@ -408,6 +458,17 @@ struct ActionButton: View {
             .padding(.vertical, 10)
             .background(color.opacity(0.12))
             .clipShape(RoundedRectangle(cornerRadius: 12))
+            .opacity(isEnabled ? 1 : 0.42)
+            .overlay {
+                if !isEnabled {
+                    Image(systemName: "lock.fill")
+                        .font(.caption.bold())
+                        .foregroundColor(.white.opacity(0.75))
+                        .padding(6)
+                        .background(Color.black.opacity(0.35))
+                        .clipShape(Circle())
+                }
+            }
         }
         .buttonStyle(.plain)
     }
