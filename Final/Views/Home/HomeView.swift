@@ -8,8 +8,14 @@ struct HomeView: View {
 
     @State private var navigateToGame = false
     @State private var gameVM = GameViewModel()
+    @State private var activeProfile: PlayerProfile?
+    @State private var rewardedAdService = RewardedAdService()
+    @State private var showAdRewardAlert = false
 
-    private var profile: PlayerProfile? { profiles.first }
+    private var profile: PlayerProfile? {
+        guard let userId = authManager.currentUser?.userId else { return nil }
+        return profiles.first { $0.userId == userId }
+    }
 
     var body: some View {
         NavigationStack {
@@ -32,7 +38,7 @@ struct HomeView: View {
                         HStack(spacing: 6) {
                             Image(systemName: "dollarsign.circle.fill")
                                 .foregroundColor(.yellow)
-                            Text("\(profile?.coinBalance ?? 3000)")
+                            Text("\(profile?.coinBalance ?? RewardedAdConfiguration.startingCoins)")
                                 .font(.system(size: 18, weight: .bold, design: .rounded))
                                 .foregroundColor(.yellow)
                         }
@@ -62,10 +68,10 @@ struct HomeView: View {
                         }
 
                         VStack(spacing: 8) {
-                            Text("猜出隱藏的三個數字")
+                            Text("數字冒險王")
                                 .font(.title2.bold())
                                 .foregroundColor(.white)
-                            Text("綜合數字與顏色線索，智取密碼！")
+                            Text("抽線索、控成本，推理出三位密碼！")
                                 .font(.subheadline)
                                 .foregroundColor(.white.opacity(0.6))
                         }
@@ -77,37 +83,77 @@ struct HomeView: View {
 
                     Spacer()
 
-                    Button {
-                        ensureProfile()
-                        gameVM.startNewGame()
-                        navigateToGame = true
-                    } label: {
-                        HStack(spacing: 10) {
-                            Image(systemName: "play.fill")
-                            Text("開始新遊戲")
-                                .font(.system(size: 19, weight: .bold))
+                    VStack(spacing: 12) {
+                        Button {
+                            activeProfile = ensureProfile()
+                            gameVM.startNewGame()
+                            navigateToGame = true
+                        } label: {
+                            HStack(spacing: 10) {
+                                Image(systemName: "play.fill")
+                                Text("開始新遊戲")
+                                    .font(.system(size: 19, weight: .bold))
+                            }
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 58)
+                            .background(
+                                LinearGradient(colors: [.yellow, .orange],
+                                               startPoint: .leading, endPoint: .trailing)
+                            )
+                            .foregroundColor(.black)
+                            .clipShape(RoundedRectangle(cornerRadius: 16))
+                            .shadow(color: .orange.opacity(0.5), radius: 12, y: 4)
                         }
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 58)
-                        .background(
-                            LinearGradient(colors: [.yellow, .orange],
-                                           startPoint: .leading, endPoint: .trailing)
-                        )
-                        .foregroundColor(.black)
-                        .clipShape(RoundedRectangle(cornerRadius: 16))
-                        .shadow(color: .orange.opacity(0.5), radius: 12, y: 4)
+                        .buttonStyle(.plain)
+
+                        Button {
+                            Task { await watchRewardedAd() }
+                        } label: {
+                            HStack(spacing: 10) {
+                                if rewardedAdService.isShowingAd {
+                                    ProgressView()
+                                        .tint(.white)
+                                } else {
+                                    Image(systemName: "play.rectangle.fill")
+                                }
+                                Text(rewardedAdService.isShowingAd ? "廣告播放中…" : "看廣告 +10,000")
+                                    .font(.system(size: 17, weight: .bold))
+                            }
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 52)
+                            .background(Color.white.opacity(0.12))
+                            .foregroundColor(.white)
+                            .clipShape(RoundedRectangle(cornerRadius: 16))
+                        }
+                        .buttonStyle(.plain)
+                        .disabled(rewardedAdService.isShowingAd)
                     }
-                    .buttonStyle(.plain)
                     .padding(.horizontal, 24)
                     .padding(.bottom, 32)
                 }
             }
             .navigationDestination(isPresented: $navigateToGame) {
-                GameView(gameVM: gameVM, profile: profile)
+                GameView(gameVM: gameVM, profile: activeProfile ?? profile) {
+                    navigateToGame = false
+                    activeProfile = nil
+                }
             }
             .toolbar(.hidden, for: .navigationBar)
+            .alert("獎勵已領取", isPresented: $showAdRewardAlert) {
+                Button("太好了", role: .cancel) {}
+            } message: {
+                Text("已增加 10,000 元金幣！")
+            }
         }
-        .onAppear { ensureProfile() }
+        .onAppear { _ = ensureProfile() }
+    }
+
+    private func watchRewardedAd() async {
+        guard let rewardedProfile = ensureProfile() else { return }
+        let reward = await rewardedAdService.showRewardedAd()
+        guard reward > 0 else { return }
+        rewardedProfile.coinBalance += reward
+        showAdRewardAlert = true
     }
 
     private var backgroundGradient: LinearGradient {
@@ -124,13 +170,18 @@ struct HomeView: View {
         Color(red: 0.26, green: 0.52, blue: 0.96),
     ]
 
-    private func ensureProfile() {
-        guard profiles.isEmpty,
-              let user = authManager.currentUser else { return }
+    @discardableResult
+    private func ensureProfile() -> PlayerProfile? {
+        guard let user = authManager.currentUser else { return nil }
+        if let existing = profiles.first(where: { $0.userId == user.userId }) {
+            return existing
+        }
+
         let p = PlayerProfile(userId: user.userId,
                               displayName: user.displayName,
                               email: user.email)
         modelContext.insert(p)
+        return p
     }
 }
 

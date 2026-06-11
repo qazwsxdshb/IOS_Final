@@ -3,6 +3,7 @@ import SwiftData
 
 struct AnalysisView: View {
     let record: GameRecord
+    var onReturnHome: () -> Void = {}
 
     @Environment(\.dismiss) private var dismiss
     @Query private var profiles: [PlayerProfile]
@@ -17,41 +18,26 @@ struct AnalysisView: View {
         ZStack {
             backgroundGradient.ignoresSafeArea()
 
-            ScrollView {
-                VStack(spacing: 24) {
-                    // Result banner
-                    resultBanner
+            VStack(spacing: 0) {
+                ScrollView {
+                    VStack(spacing: 24) {
+                        // Result banner
+                        resultBanner
 
-                    // Answer reveal
-                    answerRevealCard
+                        // Answer reveal
+                        answerRevealCard
 
-                    // AI Analysis card
-                    aiAnalysisCard
+                        // AI Analysis card
+                        aiAnalysisCard
 
-                    // Stats summary
-                    statsSummaryCard
-
-                    // Back to home
-                    Button {
-                        // Pop to root: dismiss twice
-                        dismiss()
-                    } label: {
-                        Text("回到主選單")
-                            .font(.system(size: 17, weight: .bold))
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 52)
-                            .background(
-                                LinearGradient(colors: [.yellow, .orange],
-                                               startPoint: .leading, endPoint: .trailing)
-                            )
-                            .foregroundColor(.black)
-                            .clipShape(RoundedRectangle(cornerRadius: 14))
+                        // Stats summary
+                        statsSummaryCard
                     }
-                    .buttonStyle(.plain)
-                    .padding(.horizontal, 20)
-                    .padding(.bottom, 32)
+                    .padding(.top, 20)
+                    .padding(.bottom, 16)
                 }
-                .padding(.top, 20)
+
+                analysisNavigationButtons
             }
         }
         .navigationBarHidden(true)
@@ -59,6 +45,43 @@ struct AnalysisView: View {
     }
 
     // MARK: - Sub-views
+
+    private var analysisNavigationButtons: some View {
+        VStack(spacing: 12) {
+            Button {
+                dismiss()
+            } label: {
+                Text("回到遊戲畫面")
+                    .font(.system(size: 17, weight: .bold))
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 52)
+                    .background(Color.white.opacity(0.12))
+                    .foregroundColor(.white)
+                    .clipShape(RoundedRectangle(cornerRadius: 14))
+            }
+            .buttonStyle(.plain)
+
+            Button {
+                onReturnHome()
+            } label: {
+                Text("回到主選單")
+                    .font(.system(size: 17, weight: .bold))
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 52)
+                    .background(
+                        LinearGradient(colors: [.yellow, .orange],
+                                       startPoint: .leading, endPoint: .trailing)
+                    )
+                    .foregroundColor(.black)
+                    .clipShape(RoundedRectangle(cornerRadius: 14))
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 12)
+        .padding(.bottom, 24)
+        .background(Color(red: 0.03, green: 0.06, blue: 0.18).opacity(0.96))
+    }
 
     private var resultBanner: some View {
         VStack(spacing: 12) {
