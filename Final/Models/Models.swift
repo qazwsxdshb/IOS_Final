@@ -17,7 +17,7 @@ final class PlayerProfile {
         self.userId = userId
         self.displayName = displayName
         self.email = email
-        self.coinBalance = 3000  // starting coins
+        self.coinBalance = RewardedAdConfiguration.startingCoins  // starting coins
         self.totalGamesPlayed = 0
         self.totalWins = 0
         self.achievements = []

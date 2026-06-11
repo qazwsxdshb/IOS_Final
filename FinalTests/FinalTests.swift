@@ -59,4 +59,17 @@ struct FinalTests {
         #expect(generated == "三個數字加起來的總和是 6。")
     }
 
+
+    @MainActor
+    @Test func rewardedAdGrantsCoinsAndStartingBalanceIsTwentyThousand() async throws {
+        let profile = PlayerProfile(userId: "reward_test", displayName: "玩家", email: "test@example.com")
+        #expect(profile.coinBalance == 20_000)
+        #expect(RewardedAdConfiguration.applicationIdentifier == "ca-app-pub-8874059234215601~2364644736")
+        #expect(RewardedAdConfiguration.rewardedAdUnitIdentifier == "ca-app-pub-8874059234215601/4607664694")
+
+        let service = RewardedAdService()
+        let reward = await service.showRewardedAd()
+        #expect(reward == 10_000)
+    }
+
 }
