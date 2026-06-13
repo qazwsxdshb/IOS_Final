@@ -1,5 +1,7 @@
 import SwiftData
 import SwiftUI
+import TipKit
+
 
 struct ProfileView: View {
     @Environment(AuthManager.self) var authManager
@@ -24,6 +26,9 @@ struct ProfileView: View {
                         statsGrid
                         achievementSection
                         apiKeySection
+                        // TipView
+                        TipView(AISettingTip())
+                            .padding(.horizontal, 20)
 
                         if !records.isEmpty {
                             recentGamesSection

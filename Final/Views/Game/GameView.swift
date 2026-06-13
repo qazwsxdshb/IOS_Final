@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import TipKit
 
 struct GameView: View {
     @Bindable var gameVM: GameViewModel
@@ -47,7 +48,9 @@ struct GameView: View {
                         if !gameVM.guessList.isEmpty {
                             guessHistorySection
                         }
-
+                        // TipView
+                        TipView(AIHintTip())
+                            .padding(.top, 4)
                         // AI Hint section
                         aiHintSection
 
@@ -56,7 +59,11 @@ struct GameView: View {
                     .padding(.horizontal, 20)
                     .padding(.top, 16)
                 }
-
+                // TipView
+                // 在 actionButtonBar 的 VStack 裡，Divider 上面加
+                TipView(GuessTip())
+                    .padding(.horizontal, 12)
+                    .padding(.top, 8)
                 // Bottom action buttons
                 actionButtonBar
             }
